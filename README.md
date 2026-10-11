@@ -3,7 +3,7 @@
 An Intelligent Contract on [GenLayer](https://www.genlayer.com/) that verifies open source contributions (GitHub pull requests) using live web evidence and LLM consensus, then awards on-chain points to the contributor.
 
 **Deployed contract (GenLayer Studio):**
-[`0x72ECaaf000174B25e31Cf3a006AD0F6a1C39D68F`](https://explorer-studio.genlayer.com/address/0x72ECaaf000174B25e31Cf3a006AD0F6a1C39D68F)
+[`0x735Df9F673704d7283d20bF9036c25Fd1abB297B`](https://explorer-studio.genlayer.com/address/0x735Df9F673704d7283d20bF9036c25Fd1abB297B)
 
 ## The problem
 
