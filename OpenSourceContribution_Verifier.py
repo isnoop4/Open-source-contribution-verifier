@@ -3,6 +3,16 @@
 from genlayer import *
 import json
 
+# Poin ditentukan HANYA oleh band kanonik. Validator hanya menyetujui
+# hasil leader jika (merged, relevant, band) identik, sehingga semua
+# hasil yang diterima selalu menghasilkan poin yang sama.
+BAND_POINTS = {
+    "NONE": 0,     # tidak merged / tidak relevan / spam
+    "LOW": 10,     # perubahan kecil (typo, docs minor)
+    "MEDIUM": 30,  # perbaikan bug / fitur kecil
+    "HIGH": 50,    # fitur besar / perbaikan signifikan
+}
+
 
 def normalize_pr_url(url: str) -> str:
     url = url.strip().split("#")[0].split("?")[0].rstrip("/")
@@ -55,9 +65,14 @@ class ContributionVerifier(gl.Contract):
                 "Decide:\n"
                 "- merged: has the PR been merged (true/false)\n"
                 "- relevant: does the PR match the claim (true/false)\n"
-                "- quality: integer 1-5 (5 = meaningful, 1 = typo/spam)\n\n"
+                "- band: exactly one of NONE, LOW, MEDIUM, HIGH\n"
+                "    NONE   = not merged, not relevant, or spam\n"
+                "    LOW    = small change (typo, minor docs)\n"
+                "    MEDIUM = bug fix or small feature\n"
+                "    HIGH   = large feature or significant fix\n"
+                "If unsure between two bands, choose the LOWER one.\n\n"
                 "Return ONLY JSON:\n"
-                '{"merged": true, "relevant": true, "quality": 3, '
+                '{"merged": true, "relevant": true, "band": "MEDIUM", '
                 '"reason": "brief explanation"}'
             )
 
@@ -66,17 +81,19 @@ class ContributionVerifier(gl.Contract):
             if not isinstance(result, dict):
                 raise gl.vm.UserError("Model returned an invalid response type")
 
-            try:
-                quality = int(result.get("quality", 0))
-            except Exception:
-                raise gl.vm.UserError("Model returned an invalid quality")
-            if quality < 1 or quality > 5:
-                raise gl.vm.UserError("Quality out of range")
+            merged = bool(result.get("merged", False))
+            relevant = bool(result.get("relevant", False))
+            band = str(result.get("band", "NONE")).strip().upper()
+            if band not in BAND_POINTS:
+                band = "NONE"
+            # Kanonikal: kalau tidak merged/relevan, band pasti NONE
+            if not (merged and relevant):
+                band = "NONE"
 
             return {
-                "merged": bool(result.get("merged", False)),
-                "relevant": bool(result.get("relevant", False)),
-                "quality": quality,
+                "merged": merged,
+                "relevant": relevant,
+                "band": band,
                 "reason": str(result.get("reason", "")),
             }
 
@@ -88,26 +105,28 @@ class ContributionVerifier(gl.Contract):
             if not isinstance(leader_data, dict):
                 return False
 
+            # Band dari leader harus valid dan konsisten
+            if leader_data.get("band") not in BAND_POINTS:
+                return False
+
             try:
                 mine = leader_fn()
             except Exception:
                 return False
 
+            # Semua field yang menentukan poin harus IDENTIK
             if bool(leader_data.get("merged")) != mine["merged"]:
                 return False
             if bool(leader_data.get("relevant")) != mine["relevant"]:
                 return False
-            try:
-                return abs(int(leader_data.get("quality", 0)) - mine["quality"]) <= 1
-            except Exception:
-                return False
+            return leader_data.get("band") == mine["band"]
 
         result = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
 
-        # Deterministic state changes only AFTER consensus
-        awarded = 0
-        if result["merged"] and result["relevant"]:
-            awarded = int(result["quality"]) * 10
+        # Deterministic state changes only AFTER consensus.
+        # Poin murni fungsi dari band yang sudah disepakati validator.
+        awarded = BAND_POINTS[result["band"]]
+        if awarded > 0:
             current = self.points[contributor] if contributor in self.points else u256(0)
             self.points[contributor] = u256(int(current) + awarded)
             # PR dikunci hanya kalau klaim valid, jadi klaim yang salah masih bisa diulang
