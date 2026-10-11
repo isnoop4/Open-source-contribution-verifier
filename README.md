@@ -51,11 +51,11 @@ Rewarding open source contributors (bounties, grants, community points) usually 
 
 Tested on GenLayer Studio with a real, publicly merged PR:
 
-- **PR:** `https://github.com/genlayerlabs/genlayer-studio/pull/1783`
+- **PR:** `https://github.com/genlayerlabs/genlayer-cli/pull/294`
 - **Claim:** a summary matching the PR title (execution budget floor aligned with Consensus)
-- **Verdict:** `merged: true`, `relevant: true`, `quality: 4`
-- **Awarded:** 40 points
-- **`get_points`** for the submitting wallet returned `40`
+- **Verdict:** `merged: true`, `relevant: true`, `quality: MEDIUM`
+- **Awarded:** 30 points
+- **`get_points`** for the submitting wallet returned `30`
 - Transaction reached **FINALIZED** with validator consensus reached
 
 ## Known limitations
