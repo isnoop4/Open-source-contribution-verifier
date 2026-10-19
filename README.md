@@ -11,7 +11,7 @@ Rewarding open source contributors (bounties, grants, community points) usually 
 
 ## How it works
 
-1. A contributor call `submit_contribution(pr_url, claim)` with a GitHub PR link and a short description of what they contributed.
+1. A contributor can call `submit_contribution(pr_url, claim)` with a GitHub PR link and a short description of what they contributed.
 2. The leader validator fetches the PR page with `gl.nondet.web.render` and asks an LLM to judge three things:
    - `merged`: has the PR actually been merged?
    - `relevant`: does the PR content match the contributor's claim?
