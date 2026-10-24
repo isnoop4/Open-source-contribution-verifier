@@ -49,20 +49,32 @@ Rewarding open source contributors (bounties, grants, community points) usually 
 
 ## Test result
 
-Tested on GenLayer Studio with a real, publicly merged PR:
+Tested on GenLayer Studio with real PRs from this repository.
 
-- **PR:** `https://github.com/genlayerlabs/genlayer-cli/pull/294`
-- **Claim:** a summary matching the PR title (execution budget floor aligned with Consensus)
-- **Verdict:** `merged: true`, `relevant: true`, `quality: MEDIUM`
-- **Awarded:** 30 points
-- **`get_points`** for the submitting wallet returned `30`
-- Transaction reached **FINALIZED** with validator consensus reached
+**1. Authorized claim (credited)**
+- PR: https://github.com/isnoop4/Open-source-contribution-verifier/pull/3
+- The PR body declares `genlayer-address: 0xfD7d408f5Cc0A4d507bDc41c48B4A00A8C9Fc399`
+- Verdict: merged = true, relevant = true, band = LOW
+- Awarded: 10 points, credited to the declared address
+- `get_points` for that address returned 10, `get_pr_binding` returned the same address, `is_pr_claimed` returned true
+- Transaction reached FINALIZED with validator consensus
+
+**2. Claim by a different sender**
+- The same kind of claim was sent from a second wallet
+- Points were still credited only to the address declared in the PR body
+- `get_points` for the sending wallet stayed 0
+
+**3. PR without a declared address**
+- A merged PR without a `genlayer-address` line was claimed
+- Awarded: 0 points, the PR was not locked and `is_pr_claimed` stayed false
 
 ## Known limitations
 
-- The contract does not verify that the submitter is the PR author. Anyone can claim any merged PR. A planned improvement is requiring a GitHub username and checking it against the PR author.
-- Verification relies on the rendered PR page text, so very long PR pages are truncated.
-- Only GitHub pull request URLs are supported.
+- Identity binding: points are credited only to the address declared by the PR author in the PR body (`genlayer-address: 0x...`). The contract reads the PR author and body from the GitHub API, and validators must agree on the author, address, merged status, relevance and band. If no address is declared, no points are awarded and the PR stays claimable.
+- The wallet is not proven with a signature. The proof is the line in the PR body, which only the PR author (or a repository maintainer) can write.
+- A PR author can only receive points for the address they declare. A third party who claims someone else's PR cannot redirect the points.
+- Quality bands are judged by an LLM and are limited to NONE, LOW, MEDIUM and HIGH.
+- One PR can be claimed once. Only claims that award points lock the PR.
 
 ## Run it yourself
 
