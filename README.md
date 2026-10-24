@@ -15,7 +15,7 @@ Rewarding open source contributors (bounties, grants, community points) usually 
 2. The leader validator fetches the PR page with `gl.nondet.web.render` and asks an LLM to judge three things:
    - `merged`: has the PR actually been merged?
    - `relevant`: does the PR content match the contributor's claim?
-   - `quality`: an integer from 1 to 5 (5 = meaningful change, 1 = typo or spam).
+   - `quality`: an integer from 1 to 5 (5 = meaningful change, 1 = typo or spam).. 
 3. Other validators repeat the evaluation independently and compare results using a custom `validator_fn` through `gl.vm.run_nondet_unsafe`. Consensus requires an exact match on `merged` and `relevant`, and `quality` may differ by at most 1 (quality is subjective).
 4. After consensus, the contract updates state deterministically:
    - If the PR is merged **and** relevant, the contributor receives `quality x 10` points.
